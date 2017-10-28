@@ -42,13 +42,13 @@ int main(int argc, char** args)
 	
 	SDL_Delay(2000);
 	
-	/*
+	
 	// Game Loop
 	while (true)
 	{
 		
 	}
-	*/
+	
 	
 	return 0;
 }
