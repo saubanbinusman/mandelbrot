@@ -9,6 +9,11 @@ using namespace std;
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 
+double mapDouble(double valToMap, double valMin, double valMax, double mappedMin, double mappedMax)
+{
+	return ((valToMap - valMin) / (valMax - valMin)) * (mappedMax - mappedMin) + mappedMin;
+}
+
 int main(int argc, char** args)
 {
 	// The window to render to
@@ -50,64 +55,76 @@ int main(int argc, char** args)
 		return 0;
 	}
 	
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF); // White
-	SDL_RenderClear(renderer); // Fil it with white
-	
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF); // Black
+	SDL_RenderClear(renderer); // Fil it with Black
 	
-	/*
-	for (int i = 0; i < SCREEN_WIDTH; i += 1)
+	// Mandelbrot Plotting
+	int iterations = 100;
+	
+	for (int x = 0; x < SCREEN_WIDTH; x++)
 	{
-		SDL_RenderDrawPoint(renderer, i, i);
-	}
-	
-	for (int i = SCREEN_WIDTH, j = 0; i >= 0; i -= 1, j += 1)
-	{
-		SDL_RenderDrawPoint(renderer, i, j);
-	}
-	
-	for (int i = 0; i < SCREEN_WIDTH; i++)
-	{
-		SDL_RenderDrawPoint(renderer, i, SCREEN_HEIGHT >> 1);
-	}
-	
-	for (int i = 0; i < SCREEN_HEIGHT; i++)
-	{
-		SDL_RenderDrawPoint(renderer, SCREEN_WIDTH >> 1, i);
-	}*/
-	
-	//const double PI = 3.14159265358979323846;
-	
-	for (double x = -1.0; x <= 1.0; x += 0.001)
-	{
-		double y = sqrt(1.0 - (x * x));
+		for (int y = 0; y < SCREEN_HEIGHT; y++)
+		{
+			double a = mapDouble(x, 0, SCREEN_WIDTH, -2, 2);
+			double b = mapDouble(y, 0, SCREEN_HEIGHT, -2, 2);
+			
+			double aCopy = a;
+			double bCopy = b;
+			
+			int n = 0;
+			
+			while (n < iterations)
+			{
+				double aa = (a * a) - (b * b);
+				double bb = 2 * a * b;
+				
+				a = aa + aCopy;
+				b = bb + bCopy;
+				
+				// Checking for divergance (infinity can be any user-defined value)
+				
+				double infinity = 32;
+				if (fabs(a + b) > infinity)
+				{
+					break;
+				}
+				
+				n++;
+			}
+			
+			int grayVal = mapDouble(n, 0, 100, 0, 255);
+			
+			if (n == 100)
+			{
+				grayVal = 0xFF;
+			}
+			
+			SDL_SetRenderDrawColor(renderer, grayVal, grayVal, grayVal, 0xFF);
+			SDL_RenderDrawPoint(renderer, x, y);
+		}
 		
-		int xx = (int)(x * 100) + (SCREEN_WIDTH >> 1);
-		int yy = (int)(y * 100);
-		
-		//cout << "(" << xx << ", " << yy << ")" << endl;
-		
-		//double x_Rad = (double)(x) * (PI / 180.0);
-		
-		//int y = (int)(sin(x_Rad) * 45) + (SCREEN_WIDTH >> 1);
-		
-		//int y = (int)((sin((double)x)) + (SCREEN_HEIGHT >> 1));
-		
-		//int xx = (x < 180) ? x : -x + (SCREEN_WIDTH);
-		
-		SDL_RenderDrawPoint(renderer, xx, (SCREEN_WIDTH >> 1) + yy);
-		SDL_RenderDrawPoint(renderer, xx, (SCREEN_WIDTH >> 1) - yy);
-		SDL_RenderPresent(renderer);
-		SDL_Delay(1);
+		// Uncomment this line for an animated effect
+		// SDL_RenderPresent(renderer);
 	}
 	
 	SDL_RenderPresent(renderer);
 	
 	SDL_DestroyRenderer(renderer);
 	
-	// Delay to allow the user to see the window
-	// otherwise, it just flashes and closes
-	SDL_Delay(3000);
+	// Waits for the user to close the window
+	SDL_bool done = SDL_FALSE;
+	while (!done)
+	{
+		SDL_Event event;
+		
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+			{
+				done = SDL_TRUE;
+			}
+		}
+	}
 	
 	// Free up memory
 	SDL_DestroyWindow(window);
