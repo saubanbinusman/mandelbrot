@@ -6,12 +6,69 @@
 using namespace std;
 
 // Screen dimensions
-const int SCREEN_WIDTH = 500;
-const int SCREEN_HEIGHT = 500;
+const int SCREEN_WIDTH = 400;
+const int SCREEN_HEIGHT = 400;
+
+SDL_Renderer* renderer;
 
 double mapDouble(double valToMap, double valMin, double valMax, double mappedMin, double mappedMax)
 {
 	return ((valToMap - valMin) / (valMax - valMin)) * (mappedMax - mappedMin) + mappedMin;
+}
+
+void generateMandelBrot(int maxIterations, int bailOut, double xStart, double xEnd, double yStart, double yEnd)
+{
+	unsigned int start = SDL_GetTicks();
+	for (int Px = 0; Px < SCREEN_WIDTH; Px++)
+	{
+		for (int Py = 0; Py < SCREEN_HEIGHT; Py++)
+		{
+			double x0 = mapDouble(Px, 0, SCREEN_WIDTH, xStart, xEnd);
+			double y0 = mapDouble(Py, 0, SCREEN_HEIGHT, yStart, yEnd);
+			
+			double x = x0;
+			double y = y0;
+			
+			int iteration = 0;
+			
+			while (iteration < maxIterations && fabs(x + y) < bailOut)
+			{
+				double xTemp = (x * x) - (y * y) + x0;
+				
+				y = (2 * x * y) + y0;
+				x = xTemp;
+				
+				iteration++;
+			}
+			
+			int r, g, b;
+			
+			if (iteration == maxIterations) r = 0, g = 0, b = 0;
+			else if (iteration < 64) r = iteration * 2, g = 0, b = 0;
+			else if (iteration < 128) r = (((iteration - 64) * 128) / 126) + 128, g = 0, b = 0;
+			else if (iteration < 256) r = (((iteration - 128) * 62) / 127) + 193, g = 0, b = 0;
+			else if (iteration < 512) r = 255, g = (((iteration - 256) * 62) / 255) + 1, b = 0;
+			else if (iteration < 1024) r = 255, g = (((iteration - 512) * 63) / 511) + 64, b = 0;
+			else if (iteration < 2048) r = 255, g = (((iteration - 1024) * 63) / 1023) + 128, b = 0;
+			else if (iteration < 4096) r = 255, g = (((iteration - 2048) * 63) / 2047) + 192, b = 0;
+			else r = 255, g = 255, b = 0;
+			
+			SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
+			SDL_RenderDrawPoint(renderer, Px, Py);
+		}
+		
+		// Shows progress of current calculation on console
+		//cout << ((double)(Px + 1) / SCREEN_WIDTH) * 100 << "%" << endl;
+		
+		// Uncomment this line for an animated effect
+		// SDL_RenderPresent(renderer);
+	}
+	
+	SDL_RenderPresent(renderer);
+	
+	unsigned int end = SDL_GetTicks();
+	
+	cout << "Took " << (end - start) << " ms to render." << endl;
 }
 
 int main(int argc, char** args)
@@ -39,15 +96,7 @@ int main(int argc, char** args)
 		return 0;
 	}
 	
-	//screenSurface = SDL_GetWindowSurface(window);
-	
-	// Fill the surface white
-	//SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface -> format, 0xFF, 0xFF, 0xFF));
-	
-	// Update the surface
-	//SDL_UpdateWindowSurface(window);
-	
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
 	if (renderer == NULL)
 	{
@@ -55,61 +104,16 @@ int main(int argc, char** args)
 		return 0;
 	}
 	
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF); // Black
-	SDL_RenderClear(renderer); // Fil it with Black
-	
-	// Mandelbrot Plotting
+	int bailout = 16;
 	int iterations = 100;
 	
-	for (int x = 0; x < SCREEN_WIDTH; x++)
-	{
-		for (int y = 0; y < SCREEN_HEIGHT; y++)
-		{
-			double a = mapDouble(x, 0, SCREEN_WIDTH, -2, 2);
-			double b = mapDouble(y, 0, SCREEN_HEIGHT, -2, 2);
-			
-			double aCopy = a;
-			double bCopy = b;
-			
-			int n = 0;
-			
-			while (n < iterations)
-			{
-				double aa = (a * a) - (b * b);
-				double bb = 2 * a * b;
-				
-				a = aa + aCopy;
-				b = bb + bCopy;
-				
-				// Checking for divergance (infinity can be any user-defined value)
-				
-				double infinity = 32;
-				if (fabs(a + b) > infinity)
-				{
-					break;
-				}
-				
-				n++;
-			}
-			
-			int grayVal = mapDouble(n, 0, 100, 0, 255);
-			
-			if (n == 100)
-			{
-				grayVal = 0xFF;
-			}
-			
-			SDL_SetRenderDrawColor(renderer, grayVal, grayVal, grayVal, 0xFF);
-			SDL_RenderDrawPoint(renderer, x, y);
-		}
-		
-		// Uncomment this line for an animated effect
-		// SDL_RenderPresent(renderer);
-	}
+	double startX = -2.0;
+	double endX = 2.0;
 	
-	SDL_RenderPresent(renderer);
+	double startY = -2.0;
+	double endY = 2.0;
 	
-	SDL_DestroyRenderer(renderer);
+	generateMandelBrot(iterations, bailout, startX, endX, startY, endY);
 	
 	// Waits for the user to close the window
 	SDL_bool done = SDL_FALSE;
@@ -119,14 +123,73 @@ int main(int argc, char** args)
 		
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_QUIT)
+			bool call = false;
+			
+			switch(event.type)
 			{
-				done = SDL_TRUE;
+				case SDL_QUIT:
+					done = SDL_TRUE;
+					break;
+				
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym)
+					{
+						case SDLK_LEFT:
+							startX -= 0.05;
+							endX -= 0.05;
+							call = true;
+							break;
+						
+						case SDLK_RIGHT:
+							startX += 0.05;
+							endX += 0.05;
+							call = true;
+							break;
+						
+						case SDLK_UP:
+							startY -= 0.05;
+							endY -= 0.05;
+							call = true;
+							break;
+						
+						case SDLK_DOWN:
+							startY += 0.05;
+							endY += 0.05;
+							call = true;
+							break;
+						
+						case SDLK_j:
+							startX += 0.05;
+							endX -= 0.05;
+							startY += 0.05;
+							endY -= 0.05;
+							call = true;
+							break;
+						
+						case SDLK_k:
+							startX -= 0.05;
+							endX += 0.05;
+							startY -= 0.05;
+							endY += 0.05;
+							call = true;
+							break;
+						
+						default:
+							break;
+					}
+					
+					if (call) generateMandelBrot(iterations, bailout, startX, endX, startY, endY);
+					call = false;
+					break; 
+				
+				default:
+					break;
 			}
 		}
 	}
 	
 	// Free up memory
+	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 	
