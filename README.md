@@ -33,7 +33,7 @@ An example command using apt would look like this:
 sudo apt install libsdl2-2.0 libsdl2-dev
 ```
 
-##Compiling
+## Compiling
 ### On Linux (using make):
 Navigate to src directory in terminal and type the following command:
 ```terminal
