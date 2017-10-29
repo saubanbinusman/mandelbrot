@@ -76,10 +76,6 @@ Use the following keys to navigate the space:
 | J          | Zoom in on fractal    |
 | K          | Zoom out from fractal |
 
-Arrow Keys - Moves in space according to keypress
-J - Zoom in on fractal
-K - Zoom out from fractal
-
 # Final Words
 This was my first attempt at making a fractal visualization software. This software is not meant to be fast, accurate or even beautiful. It was something that I did for fun and I learned a lot in the process.
 
