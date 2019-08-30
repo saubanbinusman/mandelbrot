@@ -19,6 +19,7 @@ double mapDouble(double valToMap, double valMin, double valMax, double mappedMin
 void generateMandelBrot(int maxIterations, int bailOut, double xStart, double xEnd, double yStart, double yEnd)
 {
 	unsigned int start = SDL_GetTicks();
+	
 	for (int Px = 0; Px < SCREEN_WIDTH; Px++)
 	{
 		for (int Py = 0; Py < SCREEN_HEIGHT; Py++)
@@ -44,14 +45,8 @@ void generateMandelBrot(int maxIterations, int bailOut, double xStart, double xE
 			int r, g, b;
 			
 			if (iteration == maxIterations) r = 0, g = 0, b = 0;
-			else if (iteration < 64) r = iteration * 2, g = 0, b = 0;
-			else if (iteration < 128) r = (((iteration - 64) * 128) / 126) + 128, g = 0, b = 0;
-			else if (iteration < 256) r = (((iteration - 128) * 62) / 127) + 193, g = 0, b = 0;
-			else if (iteration < 512) r = 255, g = (((iteration - 256) * 62) / 255) + 1, b = 0;
-			else if (iteration < 1024) r = 255, g = (((iteration - 512) * 63) / 511) + 64, b = 0;
-			else if (iteration < 2048) r = 255, g = (((iteration - 1024) * 63) / 1023) + 128, b = 0;
-			else if (iteration < 4096) r = 255, g = (((iteration - 2048) * 63) / 2047) + 192, b = 0;
-			else r = 255, g = 255, b = 0;
+			else if (iteration < 100) r = (iteration * 6) % 256, g = (iteration * 30) % 256, b = (iteration * 7) % 256;
+			else r = 255, g = 255, b = 255;
 			
 			SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
 			SDL_RenderDrawPoint(renderer, Px, Py);
@@ -131,7 +126,7 @@ int main(int argc, char** args)
 					done = SDL_TRUE;
 					break;
 				
-				case SDL_KEYUP:
+				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym)
 					{
 						case SDLK_LEFT:
