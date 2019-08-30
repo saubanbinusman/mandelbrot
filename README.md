@@ -1,6 +1,9 @@
 # mandelbrot
 A try to implement a mandelbrot set visualization in C++, using SDL.
 
+# Demo
+![](demo.png) ![](demo1.png)
+
 # How to Compile
 ## Pre-requisites:
 * Any C++ compiler. g++ is recommended.
