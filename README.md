@@ -84,4 +84,4 @@ This was my first attempt at making a fractal visualization software. This softw
 
 The algorithm is known as "Escape Time Algorithm". A lot of information was taken from Mandelbrot's page on wikipedia, fractal forum and from [this](https://www.youtube.com/watch?v=6z7GQewK-Ks) youtube video.
 
-The program outputs the milliseconds it took to generate the fractal in the console, so keep an eye on it. Maybe use it as benchmarking different machines.
+The program outputs the milliseconds it took to generate the fractal in the console, so keep an eye on it. Maybe use it for benchmarking different machines.
